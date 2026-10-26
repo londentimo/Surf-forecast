@@ -5,32 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Tulliniemi surf forecast</title>
   <style>
-    :root{--ink:#10252a;--muted:#60757a;--line:#d9e2df;--paper:#f4f5ef;--card:#fff;--sea:#176878;--lime:#d9ff61;--amber:#ffd36c;--red:#ff876d}
-    *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.4 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    main{width:min(1120px,calc(100% - 32px));margin:0 auto;padding:28px 0 46px}
-    header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:32px}
-    .eyebrow{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--sea);margin-bottom:6px}
-    h1{font-size:clamp(34px,7vw,68px);line-height:.91;letter-spacing:-.055em;margin:0;max-width:720px}
-    .place{display:block;color:var(--sea)}
-    button,.source{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:999px;padding:10px 14px;font:700 12px/1 inherit;text-decoration:none;cursor:pointer;white-space:nowrap}
-    button:hover,.source:hover{background:var(--ink);color:white}.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);margin-bottom:28px}
-    .call{padding:24px 28px 25px 0;border-right:1px solid var(--ink)}
-    .status{display:inline-flex;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;background:var(--lime);margin-bottom:16px}
-    .status.marginal{background:var(--amber)}.status.unlikely{background:#dde5e2}.status.stormy{background:var(--red)}
-    .call h2{font-size:clamp(28px,5vw,48px);line-height:1.02;letter-spacing:-.04em;margin:0 0 10px}.call p{color:var(--muted);max-width:640px;margin:0;font-size:16px}
-    .peak{padding:24px 0 25px 28px;display:grid;align-content:center}.peak .big{font-size:clamp(45px,8vw,78px);font-weight:850;line-height:.85;letter-spacing:-.06em}.peak .unit{font-size:18px;margin-left:4px}.peak .meta{margin-top:12px;color:var(--muted)}
-    .days{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}.day{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;min-height:264px;display:flex;flex-direction:column}
-    .day-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:15px;border-bottom:1px solid var(--line)}
-    .day h3{font-size:22px;letter-spacing:-.025em;margin:0}.date{font-size:12px;color:var(--muted)}.grade{font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.06em;text-align:right}
-    .metrics{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:17px 0}.metric>span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}.metric>strong{display:block;font-size:19px;margin-top:2px}.direction-value{display:flex;align-items:center;gap:8px;margin-top:4px}.direction-value strong{font-size:17px;line-height:1.05}.direction-value small{display:block;color:var(--muted);font-size:10px;font-weight:600}.dir-arrow{--dir:0deg;display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:50%;background:#e1efed;color:var(--sea);font-size:24px;font-weight:800;line-height:1;transform:rotate(var(--dir))}.dir-arrow.wind{background:#edf0e4;color:#657031}
-    .window{margin-top:auto;background:#edf2ef;border-radius:10px;padding:11px 12px;font-size:13px}.window strong{display:block;margin-bottom:2px}.reason{color:var(--muted)}
-    .foot{display:flex;justify-content:space-between;gap:22px;margin-top:22px;color:var(--muted);font-size:12px}.foot p{margin:0;max-width:690px}.updated{text-align:right;white-space:nowrap}
-    .extended{margin-top:38px;padding-top:20px;border-top:1px solid var(--ink)}.extended-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:14px}.extended h2{margin:0;font-size:25px;letter-spacing:-.03em}.extended p{margin:4px 0 0;color:var(--muted);font-size:13px}.widget-shell{overflow-x:auto;background:white;border:1px solid var(--line);border-radius:18px;padding:14px;min-height:190px}.widget-shell iframe{max-width:none}
-    .loading{animation:pulse 1.2s ease-in-out infinite}@keyframes pulse{50%{opacity:.45}}
-    .error{background:#fff1ed;border:1px solid #efb6a9;border-radius:12px;padding:14px;margin-bottom:18px;display:none}.error.show{display:block}
-    @media(max-width:760px){header{display:block}.actions{justify-content:flex-start;margin-top:18px}.hero{grid-template-columns:1fr}.call{border-right:0;border-bottom:1px solid var(--ink);padding-right:0}.peak{padding-left:0}.days{grid-template-columns:1fr}.day{min-height:220px}.foot{display:block}.updated{text-align:left;margin-top:9px}}
-  </style>
+:root{--ink:#142f35;--muted:#52686d;--line:#d8e2df;--paper:#f4f5ef;--sea:#176878;--lime:#deefad}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.45 system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums}main{max-width:1180px;margin:auto;padding:24px}
+header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:22px}.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--sea)}h1{margin:3px 0 0;font-size:32px;line-height:1.1;letter-spacing:-.04em}.place{color:var(--sea)}.actions{display:flex;gap:8px;flex-wrap:wrap}
+button,.source{font:600 13px/1.2 system-ui;color:var(--ink);background:transparent;border:1px solid #aabbb7;border-radius:7px;padding:11px 13px;min-height:44px;text-decoration:none;cursor:pointer}button:hover,.source:hover{background:#e4ebe7}button:disabled{opacity:.6;cursor:wait}:focus-visible{outline:3px solid #176878;outline-offset:3px}
+.hero{display:grid;grid-template-columns:1fr 180px;gap:22px;border-top:2px solid var(--ink);border-bottom:1px solid var(--line);padding:18px 0;margin-bottom:20px}.call h2{font-size:23px;letter-spacing:-.025em;line-height:1.2;margin:7px 0}.call p{margin:0;color:var(--muted);max-width:780px}.status,.rating{display:inline-block;font-size:12px;font-weight:650;border-radius:4px;background:var(--lime);padding:4px 7px}.marginal{background:#fff0c9}.unlikely{background:#e8edeb}.stormy{background:#ffd7c9}.peak{border-left:1px solid var(--line);padding-left:20px;align-self:center}.big{font-size:30px;font-weight:700;letter-spacing:-.04em}.unit{margin-left:4px}.meta{font-size:12px;color:var(--muted);max-width:160px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}.section-head h2{font-size:17px;margin:0}.section-head p{font-size:12px;color:var(--muted);margin:0}.forecast{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);text-align:left}.forecast th{font-size:11px;color:var(--muted);font-weight:650;text-transform:uppercase;letter-spacing:.04em;padding:10px 12px;background:#ecf0eb}.forecast td{padding:12px;border-top:1px solid var(--line);vertical-align:middle}.forecast .day-name{font-weight:700;font-size:14px}.date{font-size:12px;color:var(--muted)}.forecast th:first-child{width:16%}.forecast th:last-child{width:56px}.best-day>td{background:#f1f6e7}.best-tag{font-size:10px;text-transform:uppercase;color:#385714;font-weight:750;display:block;margin-top:2px}.value{font-weight:650;white-space:nowrap}.sub{display:block;color:var(--muted);font-size:12px;margin-top:2px}.direction{display:inline-flex;gap:5px;align-items:center;white-space:nowrap}.arrow{display:inline-block;transform:rotate(var(--dir));color:var(--sea);font-size:20px;line-height:1}.muted{color:var(--muted)}.more{width:44px;padding:0;font-size:20px;border:0}.more[aria-expanded=true]{background:#dce8e3}.detail-row[hidden]{display:none}.detail-row>td{padding:16px 20px;background:#f7faf7}.detail-title{margin:0 0 10px;font-size:13px}.hours-wrap{overflow:auto;max-height:360px}.hours{border-collapse:collapse;width:100%;font-size:13px;white-space:nowrap}.hours th{position:sticky;top:0}.hours td,.hours th{padding:8px 12px}.explanation{margin:10px 0 0;font-size:12px;color:var(--muted)}
+.foot{margin-top:14px;color:var(--muted);font-size:12px}.foot p{margin:12px 0}.updated{font-size:12px;color:var(--muted);margin:10px 0}.extended{margin-top:25px;border-top:1px solid var(--line);padding-top:14px}.extended summary{cursor:pointer;font-weight:650;min-height:44px;padding:10px 0}.extended p{font-size:12px;color:var(--muted)}.widget-shell{overflow:auto;background:white;padding:12px;min-height:190px}.error{display:none;background:#fff0e8;border:1px solid #dfb7a4;border-radius:6px;padding:12px;margin-bottom:16px}.error.show{display:block}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.mobile-label{display:none}
+@media(max-width:700px){main{padding:16px}header{align-items:flex-start;flex-direction:column;gap:14px;margin-bottom:16px}h1{font-size:29px}.actions{width:100%}.source,button{font-size:12px;padding:10px}.hero{grid-template-columns:1fr;padding:14px 0;gap:10px}.peak{display:none}.call h2{font-size:21px}.call p{font-size:13px}.section-head{display:block}.section-head p{margin-top:3px}.forecast,.forecast tbody{display:block}.forecast{border-bottom:0}.forecast>thead{display:none}.forecast>tbody>.daily{display:grid;grid-template-columns:1.1fr 1fr 1fr 44px;border-bottom:1px solid var(--line);padding:10px 8px;gap:9px 4px}.forecast .daily>td{padding:0;border:0}.daily .day-cell{grid-column:1}.daily .time-cell{grid-column:2}.daily .outlook-cell{grid-column:3/5;grid-row:1;justify-self:end;max-width:140px;text-align:right}.daily .wind-cell{grid-column:1;grid-row:2}.daily .wave-cell{grid-column:2/4;grid-row:2;padding-left:8px}.daily .gust-cell{display:none}.daily .toggle-cell{grid-column:4;grid-row:2;align-self:center}.best-day{background:#f1f6e7}.best-day>td{background:transparent}.rating{font-size:11px;padding:4px 6px}.mobile-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:3px}.forecast .detail-row{display:block}.forecast .detail-row[hidden]{display:none}.detail-row>td{display:block;padding:12px}.hours{min-width:510px}.forecast .hours th:first-child{width:auto}.best-tag{font-size:9px}.value{font-size:14px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
 </head>
 <body>
 <main>
@@ -40,14 +24,12 @@
   </header>
   <div id="error" class="error"></div>
   <section class="hero">
-    <div class="call"><div id="status" class="status loading">Reading forecast</div><h2 id="headline">Checking the available forecast…</h2><p id="summary">Loading Windguru GFS wind, supported by FMI WAM waves.</p></div>
+    <div class="call"><div id="status" role="status" class="status loading">Reading forecast</div><h2 id="headline">Checking the available forecast…</h2><p id="summary">Loading Windguru GFS wind, supported by FMI WAM waves.</p></div>
     <div class="peak"><div><span id="peakHeight" class="big">—</span><span class="unit">m</span></div><div id="peakMeta" class="meta">Forecast peak</div></div>
   </section>
-  <section id="days" class="days" aria-live="polite"></section>
-  <section class="extended">
-    <div class="extended-head"><div><h2>Windguru extended outlook</h2><p>Official Hanko spot 1914 · WG blend for comparison. Cards above use Windguru GFS, which can differ from this blend.</p></div></div>
-    <div class="widget-shell"><div id="wg_fwdg_1914_100_tulliniemi"></div></div>
-  </section>
+  <div class="section-head"><h2>Daily outlook</h2><p>06–22 Helsinki · values at each day’s best time</p></div>
+  <section id="days" aria-label="Daily forecast"></section>
+  <details class="extended" id="windguru-comparison"><summary>Compare with Windguru’s blended forecast</summary><p>The daily outlook uses GFS. The WG blend below is a different model.</p><div class="widget-shell"><div id="wg_fwdg_1914_100_tulliniemi"></div></div></details>
   <footer class="foot"><p>Suggestions use 06:00–22:00 Helsinki time (a fixed time filter, not a sunrise/sunset calculation). Direction bands are local tuning assumptions. Interpretation is tuned for Finnish short-period wind swell. E–SSE generating wind takes priority over the WAM mean-wave direction; without that wind, the wave approach is evaluated separately. Arrows point in the direction the wind or waves travel; the text states where they come from.</p><div id="updated" class="updated">Connecting to Windguru…</div></footer>
 </main>
 <script id="forecast-snapshot" type="application/json">null</script>
@@ -116,7 +98,9 @@
     if(r.WindSpeedMS>15)text+=' Strong conditions may be difficult and disorganised.';
     return text;
   }
-  function directionMarkup(direction,type){if(!Number.isFinite(direction))return '<strong>—</strong>';const travel=(direction+180)%360;return `<div class="direction-value"><span class="dir-arrow ${type}" style="--dir:${travel}deg" title="Travels toward ${compass(travel)}">↑</span><strong>${compass(direction)} ${Math.round(direction)}°<small>from</small></strong></div>`}
+  function directionMarkup(d){if(!Number.isFinite(d))return '—';return `<span class="direction" title="From ${compass(d)} ${Math.round(d)}°"><span class="arrow" aria-hidden="true" style="--dir:${(d+180)%360}deg">↑</span><span><span class="sr-only">from </span>${compass(d)}</span></span>`}
+  const n=(v,d=1)=>Number.isFinite(v)?v.toFixed(d):'—';
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function render(rows,data){
     const now=new Date(), today=localKey(now), available=rows.filter(r=>sessionEligible(r,now));
     if(!available.length)throw new Error('No upcoming forecast hours within 06:00–22:00 are currently available');
@@ -129,7 +113,12 @@
     const heights=available.map(r=>r.SigWaveHeight).filter(Number.isFinite);
     $('#peakHeight').textContent=heights.length?Math.max(...heights).toFixed(1):'—';
     $('#peakMeta').textContent='Highest available WAM sea · session hours only';
-    $('#days').innerHTML=groups.map((g,i)=>{const best=[...g].sort((a,b)=>quality(b)-quality(a))[0],peak=[...g].sort((a,b)=>(b.SigWaveHeight??-1)-(a.SigWaveHeight??-1))[0],[label]=classify(best);return `<article class="day"><div class="day-head"><div><h3>${localKey(best.time)===today?'Today':fmtDay.format(best.time)}</h3><div class="date">${fmtDate.format(best.time)}</div></div><div class="grade">${label}</div></div><div class="metrics"><div class="metric"><span>Max wave · 06–22</span><strong>${Number.isFinite(peak.SigWaveHeight)?peak.SigWaveHeight.toFixed(1)+' m':'Unavailable'}</strong></div><div class="metric"><span>At best window</span><strong>${Number.isFinite(best.WavePeriod)?Math.round(best.WavePeriod)+' s':'No WAM data'}</strong></div><div class="metric"><span>Wave direction</span>${directionMarkup(best.WaveDirection,'wave')}</div><div class="metric"><span>Wind · ${Number.isFinite(best.WindSpeedMS)?Math.round(best.WindSpeedMS)+' m/s':'—'}</span>${directionMarkup(best.WindDirection,'wind')}</div></div><div class="window"><strong>Wind window · ${fmtTime.format(best.time)}</strong><span class="reason">${describe(best)}</span></div></article>`}).join('');
+    $('#days').innerHTML=`<table class="forecast"><caption class="sr-only">Daily forecast. All values refer to the best forecast time for that day. Expand a day for all session hours.</caption><thead><tr><th scope="col">Day</th><th scope="col">Best time</th><th scope="col">Wind · m/s</th><th scope="col">Gust · m/s</th><th scope="col">Waves · m / s</th><th scope="col">Potential</th><th scope="col"><span class="sr-only">Hourly details</span></th></tr></thead><tbody>`+groups.map((g,i)=>{
+      const best=[...g].sort((a,b)=>quality(b)-quality(a))[0],[label,kind]=classify(best),isBest=localKey(best.time)===localKey(overall.time)&&overallLabel!=='Low potential';
+      const wave=Number.isFinite(best.SigWaveHeight),longRange=best.time-now>5*86400000;
+      return `<tr class="daily ${isBest?'best-day':''}"><td class="day-cell"><div class="day-name">${localKey(best.time)===today?'Today':fmtDay.format(best.time)}</div><div class="date">${fmtDate.format(best.time)}</div>${isBest?'<span class="best-tag">Best potential</span>':''}</td><td class="time-cell"><span class="mobile-label">Best time</span><span class="value">${fmtTime.format(best.time)}</span>${longRange?'<span class="sub">Long range</span>':''}</td><td class="wind-cell"><span class="mobile-label">Wind · m/s</span><span class="value">${n(best.WindSpeedMS)}</span> ${directionMarkup(best.WindDirection)}</td><td class="gust-cell"><span class="value">${n(best.WindGust)}</span></td><td class="wave-cell"><span class="mobile-label">Waves · m / s</span>${wave?`<span class="value">${n(best.SigWaveHeight)} m</span> <span class="muted">/ ${n(best.WavePeriod,0)} s</span><span class="sub">${directionMarkup(best.WaveDirection)}</span>`:'<span class="muted">No WAM data</span>'}</td><td class="outlook-cell"><span class="rating ${kind}">${label.replace(' wind potential',' wind').replace(' wave potential',' waves')}</span>${!wave?'<span class="sub">Wind only</span>':''}</td><td class="toggle-cell"><button class="more" aria-expanded="false" aria-controls="hours-${i}" aria-label="Hourly forecast for ${fmtDay.format(best.time)} ${fmtDate.format(best.time)}">+</button></td></tr>
+      <tr id="hours-${i}" class="detail-row" hidden><td colspan="7"><p class="detail-title"><strong>${fmtDay.format(best.time)} · hourly forecast</strong> — Helsinki time</p><div class="hours-wrap" tabindex="0" role="region" aria-label="Hourly values for ${fmtDate.format(best.time)}"><table class="hours"><thead><tr><th scope="col">Time</th><th scope="col">Wind · m/s</th><th scope="col">Gust · m/s</th><th scope="col">Waves · m</th><th scope="col">Period · s</th><th scope="col">Wave from</th></tr></thead><tbody>${g.map(r=>`<tr><td>${fmtTime.format(r.time)}</td><td>${n(r.WindSpeedMS)} ${directionMarkup(r.WindDirection)}</td><td>${n(r.WindGust)}</td><td>${n(r.SigWaveHeight)}</td><td>${n(r.WavePeriod,0)}</td><td>${directionMarkup(r.WaveDirection)}</td></tr>`).join('')}</tbody></table></div><p class="explanation">${describe(best)} A dash means no forecast value is available.</p></td></tr>`;
+    }).join('')+'</tbody></table>';
     $('#updated').textContent=`${keys.length} forecast days · through ${fmtStamp.format(available[available.length-1].time)} · fetched ${fmtStamp.format(new Date(data.fetchedAt))} · model run ${fmtStamp.format(new Date(data.modelRun))}`;
   }
   function validate(data){
@@ -161,6 +150,7 @@
       $('#error').textContent=e.message;$('#error').className='error show';$('#status').textContent='Data unavailable';$('#status').className='status unlikely';$('#headline').textContent='Windguru forecast unavailable';$('#summary').textContent='Open Windguru directly. No other wind source has been substituted.';$('#updated').textContent='Refresh failed';
     }finally{$('#refresh').disabled=false;$('#refresh').textContent='Refresh'}
   }
+  $('#days').addEventListener('click',event=>{const button=event.target.closest('.more');if(!button)return;const open=button.getAttribute('aria-expanded')==='true';button.setAttribute('aria-expanded',String(!open));button.textContent=open?'+':'−';document.getElementById(button.getAttribute('aria-controls')).hidden=open;});
   $('#refresh').addEventListener('click',load);load();
 })();
 </script>
@@ -177,7 +167,7 @@
     script.src='https://www.windguru.cz/js/widget.php?'+args.join('&');
     document.body.appendChild(script);
   }
-  window.addEventListener('load',loadWindguru,false);
+  document.getElementById('windguru-comparison').addEventListener('toggle',function(){if(this.open&&!this.dataset.loaded){this.dataset.loaded='true';loadWindguru();}});
 })(window,document);
 </script>
 </body>
