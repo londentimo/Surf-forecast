@@ -40,19 +40,20 @@
   </header>
   <div id="error" class="error"></div>
   <section class="hero">
-    <div class="call"><div id="status" class="status loading">Reading forecast</div><h2 id="headline">Checking the available forecast…</h2><p id="summary">Loading FMI WAM waves and HARMONIE wind for the exact Tulliniemi model point.</p></div>
+    <div class="call"><div id="status" class="status loading">Reading forecast</div><h2 id="headline">Checking the available forecast…</h2><p id="summary">Loading Windguru GFS wind, supported by FMI WAM waves.</p></div>
     <div class="peak"><div><span id="peakHeight" class="big">—</span><span class="unit">m</span></div><div id="peakMeta" class="meta">Forecast peak</div></div>
   </section>
   <section id="days" class="days" aria-live="polite"></section>
   <section class="extended">
-    <div class="extended-head"><div><h2>Windguru extended outlook</h2><p>Official Hanko spot 1914 widget · up to 240 forecast hours when available.</p></div></div>
+    <div class="extended-head"><div><h2>Windguru extended outlook</h2><p>Official Hanko spot 1914 · WG blend for comparison. Cards above use Windguru GFS, which can differ from this blend.</p></div></div>
     <div class="widget-shell"><div id="wg_fwdg_1914_100_tulliniemi"></div></div>
   </section>
-  <footer class="foot"><p>Interpretation is tuned for Finnish short-period wind swell. E–SE generating wind takes priority over the WAM mean-wave direction; without that wind, the wave approach is evaluated separately. Arrows point in the direction the wind or waves travel; the text states where they come from.</p><div id="updated" class="updated">Connecting to FMI…</div></footer>
+  <footer class="foot"><p>Suggestions use 06:00–22:00 Helsinki time (a fixed time filter, not a sunrise/sunset calculation). Direction bands are local tuning assumptions. Interpretation is tuned for Finnish short-period wind swell. E–SSE generating wind takes priority over the WAM mean-wave direction; without that wind, the wave approach is evaluated separately. Arrows point in the direction the wind or waves travel; the text states where they come from.</p><div id="updated" class="updated">Connecting to Windguru…</div></footer>
 </main>
+<script id="forecast-snapshot" type="application/json">null</script>
 <script>
 (() => {
-  const LATLON='59.8086,22.9158', TZ='Europe/Helsinki', WFS='https://opendata.fmi.fi/wfs';
+  const TZ='Europe/Helsinki';
   const $=s=>document.querySelector(s);
   const fmtDay=new Intl.DateTimeFormat('en-FI',{timeZone:TZ,weekday:'long'});
   const fmtDate=new Intl.DateTimeFormat('en-FI',{timeZone:TZ,day:'numeric',month:'short'});
@@ -60,11 +61,6 @@
   const fmtStamp=new Intl.DateTimeFormat('en-FI',{timeZone:TZ,day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false});
   const compass=d=>['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(((d%360)+360)%360/22.5)%16];
   const angle=(a,b)=>Math.abs(((a-b+540)%360)-180);
-  function isoHour(d){const x=new Date(d);x.setUTCMinutes(0,0,0);return x.toISOString().replace('.000','')}
-  function url(query,params,start,end){const q=new URLSearchParams({service:'WFS',version:'2.0.0',request:'getFeature',storedquery_id:query,latlon:LATLON,parameters:params,starttime:isoHour(start),endtime:isoHour(end),timezone:TZ,timestep:'60'});return `${WFS}?${q}`}
-  async function readXML(u){const r=await fetch(u);if(!r.ok)throw new Error(`FMI returned ${r.status}`);const doc=new DOMParser().parseFromString(await r.text(),'application/xml');if(doc.querySelector('parsererror'))throw new Error('Could not read FMI data');return doc}
-  function series(doc){const out={};for(const obs of doc.getElementsByTagNameNS('*','PointTimeSeriesObservation')){const prop=obs.getElementsByTagNameNS('*','observedProperty')[0];const href=prop?.getAttributeNS('http://www.w3.org/1999/xlink','href')||prop?.getAttribute('xlink:href')||'';const name=(href.match(/[?&]param=([^&]+)/)||[])[1];if(!name)continue;out[name]=[...obs.getElementsByTagNameNS('*','MeasurementTVP')].map(p=>({time:new Date(p.getElementsByTagNameNS('*','time')[0].textContent),value:Number(p.getElementsByTagNameNS('*','value')[0].textContent)}));}return out}
-  function merge(wave,wind){const rows=new Map();for(const [name,pts] of Object.entries({...wave,...wind}))for(const p of pts){const k=p.time.toISOString();if(!rows.has(k))rows.set(k,{time:p.time});rows.get(k)[name]=p.value}return [...rows.values()].filter(r=>Number.isFinite(r.SigWaveHeight)).sort((a,b)=>a.time-b.time)}
   function localKey(d){return new Intl.DateTimeFormat('sv-SE',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
   function waveFit(dir){
     dir=((dir%360)+360)%360;
@@ -76,8 +72,8 @@
   function windFit(dir){
     if(!Number.isFinite(dir))return 0;
     dir=((dir%360)+360)%360;
-    if(dir>=90&&dir<=150)return 1;
-    if((dir>=70&&dir<90)||(dir>150&&dir<=175))return .62;
+    if(dir>=90&&dir<168.75)return 1;
+    if((dir>=70&&dir<90)||(dir>=168.75&&dir<=175))return .62;
     return .15;
   }
   function effectiveFit(r){
@@ -86,34 +82,84 @@
     if(wind>=.6)return Math.max(wave,.6);
     return wave;
   }
-  function quality(r){const h=r.SigWaveHeight||0,p=r.WavePeriod||0,w=r.WindSpeedMS||0;let q=h*Math.max(3.5,p)*effectiveFit(r);if(w>16)q*=.72;else if(w>13)q*=.86;return q}
-  function classify(r){const h=r.SigWaveHeight||0,fit=effectiveFit(r),w=r.WindSpeedMS||0;if(h<.4||fit<.3)return ['Unlikely','unlikely'];if(h<.7||fit<.65)return ['Marginal','marginal'];if(w>15&&h>1.1)return ['Stormy','stormy'];if(h>=1.25)return ['Solid',''];return ['Surfable','']}
+  // Local tuning heuristic: strong E–SSE wind can precede modelled wave growth.
+  function strongGeneratingWind(r){return windFit(r.WindDirection)===1&&Number.isFinite(r.WindSpeedMS)&&r.WindSpeedMS>=10}
+  function sessionHour(date){return Number(new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hour:'2-digit',hourCycle:'h23'}).format(date))}
+  function sessionEligible(row,now){const hour=sessionHour(row.time);return row.time>=now&&hour>=6&&hour<22}
+  // Wind drives the score; WAM is a bounded supporting contribution.
+  function quality(r){
+    const w=r.WindSpeedMS,fit=windFit(r.WindDirection);
+    const windScore=Number.isFinite(w)?Math.min(w,16)*fit*10:0;
+    const waveScore=Number.isFinite(r.SigWaveHeight)?Math.min(r.SigWaveHeight,2)*effectiveFit(r)*3:0;
+    return windScore+waveScore;
+  }
+  function classify(r){
+    if(strongGeneratingWind(r))return ['Good wind potential',''];
+    if(windFit(r.WindDirection)===1&&r.WindSpeedMS>=7)return ['Some wind potential','marginal'];
+    if(Number.isFinite(r.SigWaveHeight)&&r.SigWaveHeight>=.7&&waveFit(r.WaveDirection)>=.65)return ['Residual wave potential','marginal'];
+    return ['Low potential','unlikely'];
+  }
   function windRelation(d){
     d=((d%360)+360)%360;
-    if(d>=90&&d<=150)return 'wave-building onshore';
-    if((d>=70&&d<90)||(d>150&&d<=175))return 'marginal cross-onshore';
+    if(d>=90&&d<168.75)return 'wave-building onshore';
+    if((d>=70&&d<90)||(d>=168.75&&d<=175))return 'marginal cross-onshore';
     if(d>=285&&d<=340)return 'offshore';
     return 'poorly aligned';
   }
-  function describe(best){const [label]=classify(best), h=best.SigWaveHeight, p=best.WavePeriod, wd=best.WaveDirection, ws=best.WindSpeedMS, wf=windFit(best.WindDirection);let text=`${h.toFixed(1)} m at ${Math.round(p)} s from ${compass(wd)}.`;if(Number.isFinite(ws))text+=` ${compass(best.WindDirection)} ${windRelation(best.WindDirection)} wind around ${Math.round(ws)} m/s.`;if(wf===1&&waveFit(wd)<.65)text+=' The correctly aligned generating wind overrides the mean WAM wave direction.';else if(label==='Stormy')text+=' Plenty of size, but likely difficult and disorganised.';else if(label==='Surfable'||label==='Solid')text+=' The setup reaches Tulliniemi well.';else if(effectiveFit(best)<.65)text+=' The setup is poorly aligned with the break.';return text}
+  function describe(r){
+    let text=`${compass(r.WindDirection)} wind ${r.WindSpeedMS.toFixed(1)} m/s`;
+    if(Number.isFinite(r.WindGust))text+=`, gusts ${r.WindGust.toFixed(1)} m/s`;
+    text+='.';
+    if(Number.isFinite(r.SigWaveHeight))text+=` WAM ${r.SigWaveHeight.toFixed(1)} m${Number.isFinite(r.WavePeriod)?' at '+Math.round(r.WavePeriod)+' s':''}.`;
+    else text+=' WAM unavailable for this time; wind potential only.';
+    if(strongGeneratingWind(r))text+=' Strong E–SSE generating wind takes priority over mean wave direction.';
+    if(r.WindSpeedMS>15)text+=' Strong conditions may be difficult and disorganised.';
+    return text;
+  }
   function directionMarkup(direction,type){if(!Number.isFinite(direction))return '<strong>—</strong>';const travel=(direction+180)%360;return `<div class="direction-value"><span class="dir-arrow ${type}" style="--dir:${travel}deg" title="Travels toward ${compass(travel)}">↑</span><strong>${compass(direction)} ${Math.round(direction)}°<small>from</small></strong></div>`}
-  function render(rows){
-    const now=new Date(), today=localKey(now), available=rows.filter(r=>r.time>=new Date(now.getTime()-3600000));
-    if(!available.length)throw new Error('No future forecast values are currently available');
+  function render(rows,data){
+    const now=new Date(), today=localKey(now), available=rows.filter(r=>sessionEligible(r,now));
+    if(!available.length)throw new Error('No upcoming forecast hours within 06:00–22:00 are currently available');
     const keys=[...new Set(available.map(r=>localKey(r.time)))];
     const groups=keys.map(k=>available.filter(r=>localKey(r.time)===k));
     const overall=[...available].sort((a,b)=>quality(b)-quality(a))[0], [overallLabel,overallClass]=classify(overall);
     $('#status').textContent=overallLabel;$('#status').className=`status ${overallClass}`;
-    $('#headline').textContent=overallLabel==='Unlikely'?'No convincing window yet':`${fmtDay.format(overall.time)} ${fmtTime.format(overall.time)} looks best`;
-    $('#summary').textContent=describe(overall);$('#peakHeight').textContent=Math.max(...available.map(r=>r.SigWaveHeight)).toFixed(1);$('#peakMeta').textContent=`Highest WAM sea in this window · best surf ${fmtDay.format(overall.time)} ${fmtTime.format(overall.time)}`;
-    $('#days').innerHTML=groups.map((g,i)=>{const best=[...g].sort((a,b)=>quality(b)-quality(a))[0],peak=[...g].sort((a,b)=>b.SigWaveHeight-a.SigWaveHeight)[0],[label]=classify(best);return `<article class="day"><div class="day-head"><div><h3>${localKey(best.time)===today?'Today':fmtDay.format(best.time)}</h3><div class="date">${fmtDate.format(best.time)}</div></div><div class="grade">${label}</div></div><div class="metrics"><div class="metric"><span>Max wave</span><strong>${peak.SigWaveHeight.toFixed(1)} m</strong></div><div class="metric"><span>At best window</span><strong>${Math.round(best.WavePeriod)} s</strong></div><div class="metric"><span>Wave direction</span>${directionMarkup(best.WaveDirection,'wave')}</div><div class="metric"><span>Wind · ${Number.isFinite(best.WindSpeedMS)?Math.round(best.WindSpeedMS)+' m/s':'—'}</span>${directionMarkup(best.WindDirection,'wind')}</div></div><div class="window"><strong>Best chance · ${fmtTime.format(best.time)}</strong><span class="reason">${describe(best)}</span></div></article>`}).join('');
-    $('#updated').textContent=`${keys.length} forecast days · through ${fmtStamp.format(available[available.length-1].time)} · refreshed ${fmtStamp.format(new Date())}`;
+    $('#headline').textContent=overallLabel==='Low potential'?'No convincing window yet':`${fmtDay.format(overall.time)} ${fmtTime.format(overall.time)} · best wind potential`;
+    $('#summary').textContent=describe(overall)+` ${data.model}. All available wind forecast days are compared.`;
+    const heights=available.map(r=>r.SigWaveHeight).filter(Number.isFinite);
+    $('#peakHeight').textContent=heights.length?Math.max(...heights).toFixed(1):'—';
+    $('#peakMeta').textContent='Highest available WAM sea · session hours only';
+    $('#days').innerHTML=groups.map((g,i)=>{const best=[...g].sort((a,b)=>quality(b)-quality(a))[0],peak=[...g].sort((a,b)=>(b.SigWaveHeight??-1)-(a.SigWaveHeight??-1))[0],[label]=classify(best);return `<article class="day"><div class="day-head"><div><h3>${localKey(best.time)===today?'Today':fmtDay.format(best.time)}</h3><div class="date">${fmtDate.format(best.time)}</div></div><div class="grade">${label}</div></div><div class="metrics"><div class="metric"><span>Max wave · 06–22</span><strong>${Number.isFinite(peak.SigWaveHeight)?peak.SigWaveHeight.toFixed(1)+' m':'Unavailable'}</strong></div><div class="metric"><span>At best window</span><strong>${Number.isFinite(best.WavePeriod)?Math.round(best.WavePeriod)+' s':'No WAM data'}</strong></div><div class="metric"><span>Wave direction</span>${directionMarkup(best.WaveDirection,'wave')}</div><div class="metric"><span>Wind · ${Number.isFinite(best.WindSpeedMS)?Math.round(best.WindSpeedMS)+' m/s':'—'}</span>${directionMarkup(best.WindDirection,'wind')}</div></div><div class="window"><strong>Wind window · ${fmtTime.format(best.time)}</strong><span class="reason">${describe(best)}</span></div></article>`}).join('');
+    $('#updated').textContent=`${keys.length} forecast days · through ${fmtStamp.format(available[available.length-1].time)} · fetched ${fmtStamp.format(new Date(data.fetchedAt))} · model run ${fmtStamp.format(new Date(data.modelRun))}`;
+  }
+  function validate(data){
+    if(!data||!Array.isArray(data.rows)||!data.rows.length||!Number.isFinite(Date.parse(data.fetchedAt)))throw new Error('Invalid forecast data');
+    const rows=data.rows.map(r=>({...r,time:new Date(r.time)})).filter(r=>Number.isFinite(+r.time)&&Number.isFinite(r.WindSpeedMS)&&Number.isFinite(r.WindDirection));
+    if(!rows.length)throw new Error('No Windguru wind data');
+    return rows;
   }
   async function load(){
     $('#error').className='error';$('#refresh').disabled=true;$('#refresh').textContent='Refreshing…';
-    try{const start=new Date(Date.now()-3600000),end=new Date(Date.now()+10*24*3600000);const [wam,harmonie]=await Promise.all([readXML(url('fmi::forecast::wam::point::timevaluepair','SigWaveHeight,WavePeriod,WaveDirection',start,end)),readXML(url('fmi::forecast::harmonie::surface::point::timevaluepair','WindSpeedMS,WindDirection,WindGust',start,end))]);render(merge(series(wam),series(harmonie)))}
-    catch(e){$('#error').textContent=`Live forecast could not be loaded: ${e.message}. Try Refresh, or open the Aaltopoiju and Windguru links.`;$('#error').className='error show';$('#status').textContent='Data unavailable';$('#status').className='status unlikely';$('#headline').textContent='Could not reach FMI';$('#summary').textContent='The page needs an internet connection to retrieve the current forecast.';$('#updated').textContent='Last refresh failed'}
-    finally{$('#refresh').disabled=false;$('#refresh').textContent='Refresh'}
+    let data=null, snapshot=false;
+    try{
+      if(location.protocol!=='file:'){
+        for(const endpoint of ['api/forecast','forecast.json']){
+          try{const response=await fetch(endpoint,{cache:'no-store',signal:AbortSignal.timeout(65000)});if(!response.ok)continue;const candidate=await response.json();validate(candidate);data=candidate;break}catch(e){}
+        }
+      }
+      if(!data){data=JSON.parse($('#forecast-snapshot').textContent);snapshot=true;}
+      const rows=validate(data);const age=(Date.now()-Date.parse(data.fetchedAt))/3600000;
+      if(age>24)throw new Error('Saved forecast is over 24 hours old. Open the hosted page or regenerate the forecast.');
+      render(rows,data);
+      const notes=[];
+      if(snapshot)notes.push('Saved snapshot — this downloaded file cannot refresh Windguru directly. Use the hosted app for updates.');
+      if(age>6)notes.push('Forecast fetch is more than 6 hours old.');
+      if(data.warning)notes.push(data.warning);
+      if(notes.length){$('#error').textContent=notes.join(' ');$('#error').className='error show';}
+    }catch(e){
+      $('#days').innerHTML='';$('#peakHeight').textContent='—';$('#peakMeta').textContent='No current comparison';
+      $('#error').textContent=e.message;$('#error').className='error show';$('#status').textContent='Data unavailable';$('#status').className='status unlikely';$('#headline').textContent='Windguru forecast unavailable';$('#summary').textContent='Open Windguru directly. No other wind source has been substituted.';$('#updated').textContent='Refresh failed';
+    }finally{$('#refresh').disabled=false;$('#refresh').textContent='Refresh'}
   }
   $('#refresh').addEventListener('click',load);load();
 })();
@@ -123,7 +169,7 @@
   function loadWindguru(){
     var args=[
       's=1914','m=100','mw=84','uid=wg_fwdg_1914_100_tulliniemi',
-      'wj=ms','tj=c','waj=m','odh=0','doh=24','fhours=240','hrsm=3',
+      'wj=ms','tj=c','waj=m','odh=6','doh=22','fhours=240','hrsm=3',
       'vt=forecasts','lng=en','idbs=1',
       'p=WINDSPD,GUST,SMER,HTSGW,PERPW,DIRPW,TMP,RATING'
     ];
